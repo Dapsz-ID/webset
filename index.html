@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dapsz Senpai</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            inter: ['Inter', 'sans-serif'],
+          },
+          keyframes: {
+            slideIn: {
+              '0%': { transform: 'translateX(-100%)' },
+              '100%': { transform: 'translateX(0)' },
+            },
+            slideOut: {
+              '0%': { transform: 'translateX(0)' },
+              '100%': { transform: 'translateX(100%)' },
+            }
+          },
+          animation: {
+            slideIn: 'slideIn .25s ease-in forwards',
+            slideOut: 'slideOut .25s ease-out forwards',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="font-inter min-h-screen bg-[#f4f4f5] flex items-center justify-center px-4 overflow-hidden">
+
+  <!-- PAGE TRANSITION OVERLAY -->
+  <div id="pageTransition"
+       class="fixed inset-0 bg-black z-50 -translate-x-full">
+  </div>
+
+  <main class="w-full max-w-lg">
+
+    <section class="bg-white border-4 border-black p-8 shadow-[8px_8px_0_0_#000]">
+
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-4 leading-tight">
+        Selamat Datang <br>
+        Di Website <span class="underline decoration-4">Dapsz Senpai</span>
+      </h1>
+
+      <p class="text-gray-700 mb-8">
+        Untuk melanjutkan, silahkan klik salah satu tombol di bawah ini.
+      </p>
+
+      <div class="flex flex-col sm:flex-row gap-4">
+
+        <a href="reaction.html"
+           class="page-link text-center bg-yellow-300 border-4 border-black px-6 py-3 font-bold
+                  shadow-[4px_4px_0_0_#000] transition-all duration-150
+                  hover:translate-x-1 hover:translate-y-1 hover:shadow-none">
+          Reaction WhatsApp
+        </a>
+
+        <a href="prompt.html"
+           class="page-link text-center bg-cyan-300 border-4 border-black px-6 py-3 font-bold
+                  shadow-[4px_4px_0_0_#000] transition-all duration-150
+                  hover:translate-x-1 hover:translate-y-1 hover:shadow-none">
+          Prompt Generator
+        </a>
+        
+        <a href="enc.html"
+           class="page-link text-center bg-white-300 border-4 border-black px-6 py-3 font-bold
+                  shadow-[4px_4px_0_0_#000] transition-all duration-150
+                  hover:translate-x-1 hover:translate-y-1 hover:shadow-none">
+          Encrypt Js
+        </a>
+
+      </div>
+    </section>
+
+    <p class="mt-6 text-xs text-gray-500 text-center">
+      © 2025 Dapsz Senpai — Neo-Brutal UI
+    </p>
+
+  </main>
+
+  <!-- PAGE TRANSITION SCRIPT -->
+  <script>
+    const overlay = document.getElementById("pageTransition");
+    const links = document.querySelectorAll(".page-link");
+
+    links.forEach(link => {
+      link.addEventListener("click", function (e) {
+        e.preventDefault();
+        const href = this.getAttribute("href");
+
+        overlay.classList.remove("-translate-x-full");
+        overlay.classList.add("animate-slideIn");
+
+        setTimeout(() => {
+          window.location.href = href;
+        }, 250);
+      });
+    });
+
+    // Play exit animation when page loaded
+    window.addEventListener("load", () => {
+      overlay.classList.add("animate-slideOut");
+      setTimeout(() => {
+        overlay.classList.add("hidden");
+      }, 250);
+    });
+  </script>
+
+</body>
+</html>
