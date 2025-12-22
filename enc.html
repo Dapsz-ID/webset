@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>JS Encryptor 2x Layer - Dapsz</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- CDN JavaScript Obfuscator -->
+<script src="https://cdn.jsdelivr.net/npm/javascript-obfuscator/dist/index.browser.js"></script>
+
+<style>
+body {
+  background: #020617;
+  color: #e5e7eb;
+  font-family: monospace;
+  margin: 0;
+  padding: 20px;
+}
+
+.container {
+  max-width: 900px;
+  margin: auto;
+}
+
+h1 {
+  text-align: center;
+}
+
+p {
+  text-align: center;
+  color: #94a3b8;
+}
+
+textarea {
+  width: 100%;
+  min-height: 220px;
+  background: #020617;
+  color: #22c55e;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 14px;
+  resize: vertical;
+  margin-top: 12px;
+}
+
+button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 10px;
+  margin-right: 6px;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+.footer {
+  text-align: center;
+  margin-top: 20px;
+  color: #64748b;
+  font-size: 13px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🔐 JavaScript Encryptor (2x Layer)</h1>
+  <p>Ultra Hard Client-side Obfuscation</p>
+
+  <textarea id="input" placeholder="Paste JS asli kamu di sini..."></textarea>
+
+  <button onclick="encrypt2x()">Encrypt 2x Layer</button>
+  <button onclick="copyResult()">Copy Result</button>
+
+  <textarea id="output" placeholder="Encrypted JS (2x layer)..." readonly></textarea>
+
+  <div class="footer">
+    © Dapsz Ultra Encrypt
+  </div>
+</div>
+
+<script>
+function encrypt2x() {
+  const input = document.getElementById("input").value.trim();
+  if (!input) {
+    alert("Script masih kosong!");
+    return;
+  }
+
+  try {
+    // ===== LAYER 1 =====
+    const layer1 = JavaScriptObfuscator.obfuscate(input, {
+  compact: true,
+  controlFlowFlattening: true,
+  controlFlowFlatteningThreshold: 1,
+
+  deadCodeInjection: true,
+  deadCodeInjectionThreshold: 0.6,
+
+  stringArray: true,
+  stringArrayEncoding: ['base64'],
+  stringArrayThreshold: 1,
+
+  selfDefending: true,
+  disableConsoleOutput: true,
+
+  debugProtection: true,
+  debugProtectionInterval: 2000
+});
+
+
+    // ===== BASE64 WRAPPER =====
+    const base64 = btoa(unescape(encodeURIComponent(layer1)));
+    const wrapped = `
+      (function(){
+        const _0x = "${base64}";
+        const _1x = decodeURIComponent(escape(atob(_0x)));
+        eval(_1x);
+      })();
+    `;
+
+    // ===== LAYER 2 =====
+    const layer2 = JavaScriptObfuscator.obfuscate(wrapped, {
+      compact: true,
+      controlFlowFlattening: true,
+      controlFlowFlatteningThreshold: 1,
+      deadCodeInjection: true,
+      deadCodeInjectionThreshold: 0.8,
+      stringArray: true,
+      stringArrayEncoding: ['base64'],
+      stringArrayThreshold: 1,
+      rotateStringArray: true,
+      shuffleStringArray: true,
+      numbersToExpressions: true,
+      selfDefending: true,
+      disableConsoleOutput: true,
+      debugProtection: true,
+debugProtectionInterval: 3000
+
+    });
+
+    document.getElementById("output").value = layer2.getObfuscatedCode();
+
+  } catch (e) {
+    alert("Encrypt gagal: " + e.message);
+  }
+}
+
+function copyResult() {
+  const out = document.getElementById("output");
+  out.select();
+  document.execCommand("copy");
+  alert("Encrypted JS 2x layer berhasil di-copy!");
+}
+</script>
+
+</body>
+</html>
