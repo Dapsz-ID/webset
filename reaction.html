@@ -1,0 +1,655 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dapsz - Reaction Salura Whatsapp</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+    --bg-core: #030305;
+    --glass-surface: rgba(18, 18, 24, 0.75);
+    --glass-highlight: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --primary: #6366f1;
+    --accent: #d946ef;
+    --cyan: #06b6d4;
+    --success: #10b981;
+    --danger: #ef4444;
+    --wa-color: #25D366;
+    --text-main: #ffffff;
+    --text-muted: #94a3b8;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+    background-color: var(--bg-core);
+    font-family: 'Outfit', sans-serif;
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    overflow-x: hidden;
+    position: relative;
+    padding: 40px 20px;
+}
+
+/* --- BACKGROUND FX --- */
+.bg-mesh {
+    position: fixed;
+    inset: 0;
+    background: 
+        radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 85% 30%, rgba(217, 70, 239, 0.08) 0%, transparent 50%);
+    z-index: -3;
+}
+
+.grid-floor {
+    position: fixed;
+    bottom: -30%;
+    left: -50%;
+    width: 200%;
+    height: 100%;
+    background-image: 
+        linear-gradient(rgba(99, 102, 241, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99, 102, 241, 0.1) 1px, transparent 1px);
+    background-size: 40px 40px;
+    transform: perspective(500px) rotateX(70deg);
+    z-index: -2;
+    animation: gridMove 20s linear infinite;
+}
+
+@keyframes gridMove { 0% { transform: perspective(500px) rotateX(70deg) translateY(0); } 100% { transform: perspective(500px) rotateX(70deg) translateY(40px); } }
+
+/* --- LAYOUT CONTAINER --- */
+.main-wrapper {
+    width: 100%;
+    max-width: 500px;
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* --- HUD WIDGETS --- */
+.hud-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.hud-card {
+    background: rgba(10, 10, 15, 0.6);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+.hud-card::after {
+    content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--primary), transparent);
+}
+
+.hud-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+
+.hud-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    display: flex; align-items: center; gap: 8px;
+}
+
+.hud-graph {
+    height: 4px;
+    width: 100%;
+    background: rgba(255,255,255,0.1);
+    margin-top: 8px;
+    border-radius: 2px;
+    overflow: hidden;
+}
+.hud-bar { height: 100%; background: var(--success); width: 85%; animation: pulseBar 3s infinite; }
+
+@keyframes pulseBar { 0%, 100% { width: 85%; } 50% { width: 60%; } }
+
+/* --- MAIN GLASS PANEL --- */
+.glass-panel {
+    background: var(--glass-surface);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 30px 24px;
+    box-shadow: 0 20px 50px -10px rgba(0,0,0,0.5);
+    position: relative;
+}
+
+/* Decorative Corners */
+.corner-deco {
+    position: absolute; width: 20px; height: 20px;
+    border: 2px solid var(--primary);
+    transition: 0.3s;
+    opacity: 0.5;
+}
+.tl { top: -1px; left: -1px; border-right: 0; border-bottom: 0; border-radius: 12px 0 0 0; }
+.tr { top: -1px; right: -1px; border-left: 0; border-bottom: 0; border-radius: 0 12px 0 0; }
+.bl { bottom: -1px; left: -1px; border-right: 0; border-top: 0; border-radius: 0 0 0 12px; }
+.br { bottom: -1px; right: -1px; border-left: 0; border-top: 0; border-radius: 0 0 12px 0; }
+
+/* Header */
+.header-section { text-align: center; margin-bottom: 30px; position: relative; }
+
+.sys-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px;
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 30px;
+    font-size: 0.7rem;
+    color: var(--primary);
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 15px;
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.15);
+}
+
+.title-glitch {
+    font-size: 2rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, #fff 40%, var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 5px;
+    position: relative;
+}
+
+.subtitle { font-size: 0.85rem; color: var(--text-muted); font-weight: 300; letter-spacing: 0.5px; }
+
+/* Whatsapp Button */
+.dev-channel-box {
+    margin-bottom: 25px;
+}
+.btn-whatsapp {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 100%; padding: 14px;
+    background: linear-gradient(90deg, rgba(37, 211, 102, 0.15), rgba(37, 211, 102, 0.05));
+    border: 1px solid rgba(37, 211, 102, 0.3);
+    border-radius: 16px;
+    color: var(--wa-color);
+    text-decoration: none;
+    font-weight: 600; font-size: 0.9rem;
+    transition: 0.3s;
+    position: relative; overflow: hidden;
+}
+.btn-whatsapp:hover {
+    border-color: var(--wa-color);
+    box-shadow: 0 0 20px rgba(37, 211, 102, 0.2);
+    transform: translateY(-2px);
+    color: #fff; background: var(--wa-color);
+}
+
+/* Inputs */
+.input-group { margin-bottom: 24px; position: relative; }
+
+.lbl-row {
+    display: flex; justify-content: space-between;
+    margin-bottom: 10px; font-size: 0.75rem;
+    font-family: 'JetBrains Mono', monospace; color: var(--text-muted);
+}
+.lbl-row span:last-child { color: var(--cyan); }
+
+.input-box {
+    position: relative;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    transition: 0.3s;
+    overflow: hidden;
+}
+.input-box:focus-within {
+    border-color: var(--cyan);
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.15);
+}
+
+.input-box i {
+    position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+    color: var(--text-muted); font-size: 1.1rem; transition: 0.3s;
+}
+.input-box:focus-within i { color: var(--cyan); }
+
+input {
+    width: 100%; background: transparent; border: none;
+    padding: 16px 16px 16px 50px;
+    color: #fff; font-size: 1rem; font-family: 'Outfit', sans-serif;
+    outline: none;
+}
+
+/* Hint Bar */
+.hint-capsule {
+    margin-top: 8px;
+    display: inline-block;
+    padding: 4px 10px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 8px;
+    font-size: 0.7rem; color: var(--text-muted);
+}
+
+/* Action Button */
+#btnReact {
+    width: 100%; height: 60px;
+    border: none; outline: none;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: white;
+    font-weight: 700; font-size: 1rem; letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    position: relative; overflow: hidden;
+    box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#btnReact:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 15px 40px rgba(99, 102, 241, 0.5);
+}
+#btnReact::before {
+    content: ''; position: absolute; top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: 0.5s;
+}
+#btnReact:hover::before { left: 100%; }
+
+/* Console */
+.console-terminal {
+    margin-top: 30px;
+    background: #050508;
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    padding: 0;
+    max-height: 0; opacity: 0;
+    overflow: hidden;
+    transition: all 0.5s ease;
+}
+.console-terminal.active { max-height: 200px; padding: 15px; opacity: 1; border-color: rgba(255,255,255,0.1); }
+
+.log-line { display: flex; gap: 10px; border-left: 2px solid var(--glass-border); padding-left: 10px; }
+.log-time { color: var(--text-muted); opacity: 0.7; }
+.log-text.success { color: var(--success); }
+.log-text.error { color: var(--danger); }
+
+/* --- INFO SECTION --- */
+.info-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.feature-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 16px;
+    padding: 20px 15px;
+    text-align: center;
+    transition: 0.3s;
+}
+.feature-card:hover {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.1);
+    transform: translateY(-5px);
+}
+.f-icon { font-size: 1.5rem; margin-bottom: 10px; background: linear-gradient(to bottom, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.f-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 5px; color: #fff; }
+.f-desc { font-size: 0.7rem; color: var(--text-muted); line-height: 1.4; }
+
+/* Loader */
+.loading-content { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; height: 100%; }
+.spinner {
+    width: 20px; height: 20px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top: 2px solid #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.hidden { display: none !important; }
+
+/* Animation blink */
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    </style>
+</head>
+<body>
+
+
+    <div class="bg-mesh"></div>
+    <div class="grid-floor"></div>
+
+    <div class="main-wrapper">
+        
+        <div class="hud-row">
+            <div class="hud-card">
+                <span class="hud-label">SERVER STATUS</span>
+                <span class="hud-value" style="color: var(--success);">
+                    <i class="fas fa-circle" style="font-size:0.5rem; animation: blink 1s infinite;"></i> ONLINE
+                </span>
+                <div class="hud-graph"><div class="hud-bar"></div></div>
+            </div>
+            <div class="hud-card">
+                <span class="hud-label">LATENCY</span>
+                <span class="hud-value">
+                    24<span style="font-size:0.7rem; color:var(--text-muted)">ms</span>
+                </span>
+                <div class="hud-graph"><div class="hud-bar" style="width:90%; background:var(--cyan); animation-duration: 1.5s;"></div></div>
+            </div>
+        </div>
+
+        <div class="glass-panel">
+            <div class="corner-deco tl"></div>
+            <div class="corner-deco tr"></div>
+            <div class="corner-deco bl"></div>
+            <div class="corner-deco br"></div>
+
+            <div class="header-section">
+                <div class="sys-badge">
+                    <i class="fas fa-shield-alt"></i> DAPSZ SYSTEM V.1.4
+                </div>
+                <h1 class="title-glitch">REACTION SALURAN WHATSAPP </h1>
+                <p class="subtitle">Advanced WhatsApp Channel Interaction Tool</p>
+            </div>
+
+            <div class="dev-channel-box">
+                <a href="https://whatsapp.com/channel/0029Vb67ld37DAWxnYUQ0G06" target="_blank" class="btn-whatsapp">
+                    <i class="fab fa-whatsapp" style="font-size: 1.3rem;"></i>
+                    <span>JOIN OFFICIAL</span>
+                </a>
+            </div>
+
+            <form onsubmit="return false;">
+                <div class="input-group">
+                    <div class="lbl-row">
+                        <span>TARGET CONFIGURATION</span>
+                        <span>LINK POSTINGAN</span>
+                    </div>
+                    <div class="input-box">
+                        <i class="fas fa-link"></i>
+                        <input type="text" id="postUrl" placeholder="https://whatsapp.com/channel/..." autocomplete="off" spellcheck="false">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="lbl-row">
+                        <span>REACTION PAYLOAD</span>
+                        <span id="emojiCount">READY</span>
+                    </div>
+                    <div class="input-box">
+                        <i class="fas fa-icons"></i>
+                        <input type="text" id="emojis" placeholder="Contoh: 🔥, 🚀, ❤️" autocomplete="off">
+                    </div>
+                    <div class="hint-capsule">
+                        <i class="fas fa-info-circle"></i> <span id="emojiHint">Auto-separator aktif. Gunakan koma atau spasi.</span>
+                    </div>
+                </div>
+
+                <button id="btnReact">
+                    <div class="loading-content" id="btnText">
+                        <span>EXECUTE COMMAND</span>
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div class="loading-content hidden" id="btnLoader">
+                        <div class="spinner"></div>
+                        <span>PROCESSING...</span>
+                    </div>
+                </button>
+            </form>
+
+            <div class="console-terminal" id="result-container">
+                <div class="log-line">
+                    <span class="log-time">>_</span>
+                    <span class="log-text" id="result">System ready. Waiting for input...</span>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="info-section">
+            <div class="feature-card">
+                <i class="fas fa-user-secret f-icon"></i>
+                <div class="f-title">Anonymous</div>
+                <div class="f-desc">Identitas pengirim disamarkan melalui enkripsi multi-layer.</div>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-tachometer-alt f-icon"></i>
+                <div class="f-title">High Speed</div>
+                <div class="f-desc">Eksekusi API instan dengan latensi rendah ke server WA.</div>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-globe-asia f-icon"></i>
+                <div class="f-title">Global Node</div>
+                <div class="f-desc">Terhubung melalui proxy node global untuk stabilitas.</div>
+            </div>
+        </div>
+
+        <div style="text-align:center; font-size:0.6rem; color:rgba(255,255,255,0.1); margin-top:20px; font-family:'JetBrains Mono', monospace;">
+            KONEKSI AMAN TERBANGUN • DAPSZ ANOMALI
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+
+// --- KODE LOGIKA (UTAMA) ---
+function _0x4cc9(){
+    const _0x449cdb=['18NXAgur','movanest-k','ey44CZSICJC9','ey44CZSICJC9'];
+    _0x4cc9=function(){return _0x449cdb;};
+    return _0x4cc9();
+}
+const _0x4f90f5=_0x9175;
+
+(function(_0x203bbe,_0xcf355a){
+    const _0x3f3269=_0x9175,_0x242b4b=_0x203bbe();
+    while(!![]){
+        try{
+            const _0x3ba2fe=-parseInt(_0x3f3269(0x12a))/(0x4d9+0x1*-0x14e+-0x38a)+-parseInt(_0x3f3269(0x12e))/(0x7a*-0x2b+-0x1922+0x2da2)+-parseInt(_0x3f3269(0x126))/(-0xe8b+0xcc7*0x2+-0xb00)+-parseInt(_0x3f3269(0x12d))/(-0x258f+-0x1483+-0x1d0b*-0x2)*(-parseInt(_0x3f3269(0x12c))/(0x239b*-0x1+0xc90+-0x90*-0x29))+parseInt(_0x3f3269(0x12f))/(-0x10fc+-0x68d*0x1+-0xa3*-0x25)+parseInt(_0x3f3269(0x125))/(0x4b1*-0x1+0xc20+-0x768)+parseInt(_0x3f3269(0x129))/(-0x11ae*-0x2+0x236+-0x5*0x782)*(-parseInt(_0x3f3269(0x127))/(0x1c1c+0x13bf+-0x2fd2));
+            if(_0x3ba2fe===_0xcf355a)break;
+            else _0x242b4b['push'](_0x242b4b['shift']());
+        }catch(_0x3eb52f){
+            _0x242b4b['push'](_0x242b4b['shift']());
+        }
+    }
+}(_0x4cc9,-0xa*-0x1f2c5+0x8d134+-0x1429*0xd3));
+
+function _0x9175(_0x40f81f,_0x5daf0e){
+    _0x40f81f=_0x40f81f-(-0x458*0x2+-0x3*-0x20f+-0x12*-0x34);
+    const _0x468b88=_0x4cc9();
+    let _0x203271=_0x468b88[_0x40f81f];
+    return _0x203271;
+}
+
+const tokens=[_0x4f90f5(0x128)+_0x4f90f5(0x12b)+'P8'];
+const DELAY_ON_LIMIT = 5000;
+
+function formatEmojis(emojiInput) {
+    if (!emojiInput || emojiInput.trim() === '') return '';
+    let emojis = emojiInput.trim();
+    emojis = emojis.replace(/\s+/g, '');
+    const emojiRegex = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
+    const emojiMatches = emojis.match(emojiRegex);
+    if (!emojiMatches) return '';
+    
+    // Update counter for UI effect
+    const counterEl = document.getElementById('emojiCount');
+    if(counterEl) {
+        counterEl.innerText = `${emojiMatches.length} DETECTED`;
+        counterEl.style.color = '#10b981';
+    }
+    
+    if (emojiMatches.length === 1) return emojiMatches[0];
+    return emojiMatches.join(',').replace(/,+/g, ',');
+}
+
+function validateAndFormatEmojis(emojiInput) {
+    const formatted = formatEmojis(emojiInput);
+    const emojiHint = document.getElementById('emojiHint');
+    
+    if (!emojiInput || emojiInput.trim() === '') {
+        emojiHint.innerHTML = '<span style="color:var(--danger)">Input kosong!</span>';
+        return { valid: false, formatted: '' };
+    }
+    
+    const emojiRegex = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu;
+    const hasEmoji = emojiRegex.test(emojiInput);
+    
+    if (!hasEmoji) {
+        emojiHint.innerHTML = '<span style="color:var(--danger)">Hanya emoji yang diizinkan!</span>';
+        return { valid: false, formatted: '' };
+    }
+    
+    emojiHint.innerHTML = '<span style="color:var(--success)">Format Valid. Siap kirim.</span>';
+    return { valid: true, formatted: formatted };
+}
+
+async function reactToWhatsAppPost(postUrl, emojis) {
+    const emojiValidation = validateAndFormatEmojis(emojis);
+    if (!emojiValidation.valid) return { success: false, error: "Emoji Invalid" };
+    
+    const formattedEmojis = emojiValidation.formatted;
+    
+    for (const token of tokens) {
+        try {
+            const response = await axios.get("https://movanest.zone.id/user-coin", {
+                params: { user_api_key: token, postUrl, emojis: formattedEmojis },
+                timeout: 50000
+            });
+            return { success: true, data: response.data };
+        } catch (error) {
+            const status = error.response?.status;
+            const msg = error.response?.data?.message || error.message;
+            if (status === 402 || msg.toLowerCase().includes("limit")) {
+                await new Promise(r => setTimeout(r, DELAY_ON_LIMIT));
+                continue;
+            }
+            if (status === 401) continue;
+            return { success: false, status, error: msg };
+        }
+    }
+    return { success: false, status: 402, error: "System Overload" };
+}
+
+async function handleReaction() {
+    const urlInput = document.getElementById('postUrl');
+    const emojiInput = document.getElementById('emojis');
+    
+    // Get Elements for UI State
+    const btn = document.getElementById('btnReact');
+    const btnText = document.getElementById('btnText');
+    const btnLoader = document.getElementById('btnLoader');
+    
+    const url = urlInput.value.trim();
+    let emojis = emojiInput.value.trim();
+
+    if (!url) {
+        showMsg("URL TARGET MISSING", false);
+        urlInput.focus();
+        return;
+    }
+
+    if (!emojis) {
+        showMsg("EMOJI PAYLOAD MISSING", false);
+        emojiInput.focus();
+        return;
+    }
+
+    const emojiValidation = validateAndFormatEmojis(emojis);
+    if (!emojiValidation.valid) {
+        showMsg("INVALID EMOJI FORMAT", false);
+        emojiInput.focus();
+        return;
+    }
+
+    emojiInput.value = emojiValidation.formatted;
+    emojis = emojiValidation.formatted;
+
+    // Loading State
+    btn.disabled = true;
+    btnText.classList.add('hidden');
+    btnLoader.classList.remove('hidden');
+    
+    showMsg("INITIATING REQUEST SEQUENCE...", true);
+
+    const res = await reactToWhatsAppPost(url, emojis);
+
+    // Reset State
+    btn.disabled = false;
+    btnText.classList.remove('hidden');
+    btnLoader.classList.add('hidden');
+
+    if (res.success) {
+        showMsg(`SUCCESS: Reaction Sent Successfully!`, true);
+    } else {
+        showMsg(`ERROR: ${res.error}`, false);
+    }
+}
+
+function showMsg(msg, isSuccess) {
+    const resultContainer = document.getElementById('result-container');
+    const time = new Date().toLocaleTimeString([], {hour12: false});
+    
+    resultContainer.classList.add('active');
+    
+    // Construct Log Message
+    const logHTML = `
+        <span class="log-time">[${time}]</span>
+        <span class="log-text ${isSuccess ? 'success' : 'error'}">${msg}</span>
+    `;
+    
+    // Append log
+    const logLine = document.querySelector('.log-line');
+    if(logLine) logLine.innerHTML = logHTML;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const btnReact = document.getElementById('btnReact');
+    const emojiInput = document.getElementById('emojis');
+    
+    if(btnReact) btnReact.addEventListener('click', handleReaction);
+    
+    if(emojiInput) {
+        emojiInput.addEventListener('input', function() {
+            const value = this.value.trim();
+            if (value) validateAndFormatEmojis(value);
+        });
+        // Initialize inputs
+        emojiInput.value = '';
+    }
+    
+    const urlInput = document.getElementById('postUrl');
+    if(urlInput) urlInput.value = '';
+});
+
+    </script>
+</body>
+</html>
